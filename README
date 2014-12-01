@@ -1,11 +1,37 @@
 This README file contains information on the contents of the
 meta-umobo layer.
 
+The mobo layer makes easier to use Yocto for preparing a linux image for
+the U-MoBo platform (http://www.u-mobo.org).
+
+The layer provides some customization of the Yocto standard packages in order
+to workaround some issues that the author has personally faced while
+preparing a Yocto image for the target system.
+
+Actually the layer only provides an image type (named "umobo-image-qt5-eglfs")
+which provide a Qt5 EGLFS-enabled system complete with fully-accelerated
+QtWebkit and QtMultimedia. The layer depends on (and customizes) the
+fsl-community-bsp (https://github.com/Freescale/fsl-community-bsp-platform)
+and meta-qt5 (https://github.com/meta-qt5/meta-qt5) layers.
+
+The generation of the customized linux kernel and the U-Boot for the platform
+has not been integrated in meta-umobo, yet. Instead the kernel and the U-Boot
+have to be compiled out-of-the-box, starting from proper git repositories
+(namely https://github.com/u-mobo/linux-imx and
+https://github.com/u-mobo/uboot-imx, active branches).
+
+All the layers have been tested under their respective "dizzy" branch. It
+is not excluded that the compiled works anyway using other branches but it
+has not been tested yet.
+
+
+
 Table of Contents
 =================
 
   I. Adding the umobo layer to your build
  II. Misc
+
 
 
 I. Adding the umobo layer to your build
@@ -14,20 +40,141 @@ I. Adding the umobo layer to your build
 In order to use this layer, you need to make the build system aware of
 it.
 
-Assuming the aesys layer exists at the top-level of your
+Assuming the umobo layer exists at the top-level of your
 yocto build tree, you can add it to the build system by adding the
 location of the aesys layer to bblayers.conf, along with any
 other layers needed. e.g.:
 
-  BBLAYERS ?= " \
-    /path/to/yocto/meta \
-    /path/to/yocto/meta-yocto \
-    /path/to/yocto/meta-yocto-bsp \
-    /path/to/yocto/meta-umobo \
-    "
+  BBLAYERS = " \
+    ${BSPDIR}/sources/poky/meta \
+    ${BSPDIR}/sources/poky/meta-yocto \
+    \
+    ${BSPDIR}/sources/meta-openembedded/meta-oe \
+    ${BSPDIR}/sources/meta-openembedded/meta-multimedia \
+    \
+    ${BSPDIR}/sources/meta-fsl-arm \
+    ${BSPDIR}/sources/meta-fsl-arm-extra \
+    ${BSPDIR}/sources/meta-fsl-demos \
+    \
+    ${BSPDIR}/sources/meta-qt5 \
+    ${BSPDIR}/sources/meta-openembedded/meta-ruby \
+    ${BSPDIR}/sources/meta-openembedded/meta-multimedia \
+    \
+    ${BSPDIR}/sources/meta-umobo \
+  "
 
 
-II. Misc
-========
+II. Prepare an image
+=================================================
 
-(coming soon)
+This is a step-by-step guide to reproduce the same exact image prepared
+by the author (this guide only covers the preparation of the file system image,
+assuming that a kernel and the U-Boot for the U-MoBo are already in place).
+
+1) Download the REPO utils from Google
+
+   mkdir ~/bin
+
+   curl http://commondatastorage.googleapis.com/git-repo-downloads/repo >
+        ~/bin/repo
+
+   chmod a+x ~/bin/repo
+
+   export PATH=${PATH}:~/bin
+
+
+2) Download the Freescale BSP and the Yocto system (poky), branch 'dizzy'
+
+   mkdir ~/fsl-community-bsp
+
+   cd ~/fsl-community-bsp
+
+   repo init -u https://github.com/Freescale/fsl-community-bsp-platform
+        -b dizzy
+
+   repo sync
+
+
+3) Download the meta-qt5 layer
+
+   cd ~/fsl-community-bsp/sources
+
+   git clone -b dizzy https://github.com/meta-qt5/meta-qt5.git
+
+
+4) Download the meta-umobo layer
+
+   cd ~/fsl-community-bsp/sources
+
+   git clone -b dizzy https://github.com/morixhub/meta-umobo.git
+
+
+5) Prepare your build directory
+
+   MACHINE=imx6qsabresd source setup-environment build
+
+   This will create a directory named "build" under your "fsl-community-bsp"
+   directory. The current directory will be automatically changed to the
+   new folder.
+
+
+5) Adjust your conf/bblayers.conf and conf/local.conf
+
+   Make sure that your "conf/bblayers.conf" contains a reference to all the
+   requested layers; the variable BBLAYERS should be something like:
+
+   BBLAYERS = " \
+     ${BSPDIR}/sources/poky/meta \
+     ${BSPDIR}/sources/poky/meta-yocto \
+     \
+     ${BSPDIR}/sources/meta-openembedded/meta-oe \
+     ${BSPDIR}/sources/meta-openembedded/meta-multimedia \
+     \
+     ${BSPDIR}/sources/meta-fsl-arm \
+     ${BSPDIR}/sources/meta-fsl-arm-extra \
+     ${BSPDIR}/sources/meta-fsl-demos \
+     \
+     ${BSPDIR}/sources/meta-qt5 \
+     ${BSPDIR}/sources/meta-openembedded/meta-ruby \
+     ${BSPDIR}/sources/meta-openembedded/meta-multimedia \
+     \
+     ${BSPDIR}/sources/meta-umobo \
+   "
+
+   meta-umobo works creating a customized distribution named "umobo", so
+   modify your "conf/local.conf" file in order to reference the right
+   distribution; the distro variable should be set to:
+
+   DISTRO ?= 'umobo-distro'
+
+
+6) Prepare the image
+
+   The image is prepared issuing the command:
+
+   bitbake umobo-image-qt5-eglfs
+
+   Please wait... and wait again... at the end the filesystem image will
+   be ready and packaged to
+   tmp/deploy/images/imx6qsabresd/umobo-image-qt5-eglfs-imx6qsabresd
+   and can be deployed to SD card the usual way.
+
+
+7) Prepare the Qt5 toolchain
+
+   The Qt5 toolchain is prepared issuing the command:
+
+   bitbake meta-toolchain-qt5
+
+   This will produce an installer in tmp/deploy/sdk name something like
+   poky-glibc-x86_64-meta-toolchain-qt5-cortexa9hf-vfp-neon-toolchain-1.7
+   which can be used for installing the toolchain on developer machines.
+
+
+8) Enjoy! :)
+
+
+   
+
+
+
