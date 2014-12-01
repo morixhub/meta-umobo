@@ -1,8 +1,8 @@
 This README file contains information on the contents of the
 meta-umobo layer.
 
-The mobo layer makes easier to use Yocto for preparing a linux image for
-the U-MoBo platform (http://www.u-mobo.org).
+The meta-umobo layer makes easier to use Yocto for preparing a linux image
+for the U-MoBo platform (http://www.u-mobo.org).
 
 The layer provides some customization of the Yocto standard packages in order
 to workaround some issues that the author has personally faced while
@@ -16,62 +16,24 @@ and meta-qt5 (https://github.com/meta-qt5/meta-qt5) layers.
 
 The generation of the customized linux kernel and the U-Boot for the platform
 has not been integrated in meta-umobo, yet. Instead the kernel and the U-Boot
-have to be compiled out-of-the-box, starting from proper git repositories
+have to be compiled out-of-the-box, starting from proper repositories
 (namely https://github.com/u-mobo/linux-imx and
 https://github.com/u-mobo/uboot-imx, active branches).
 
 All the layers have been tested under their respective "dizzy" branch. It
-is not excluded that the compiled works anyway using other branches but it
-has not been tested yet.
+is not excluded that the layer definition works using other branches but it
+has not been tested.
 
 
-
-Table of Contents
-=================
-
-  I. Adding the umobo layer to your build
- II. Misc
-
-
-
-I. Adding the umobo layer to your build
-=================================================
-
-In order to use this layer, you need to make the build system aware of
-it.
-
-Assuming the umobo layer exists at the top-level of your
-yocto build tree, you can add it to the build system by adding the
-location of the aesys layer to bblayers.conf, along with any
-other layers needed. e.g.:
-
-  BBLAYERS = " \
-    ${BSPDIR}/sources/poky/meta \
-    ${BSPDIR}/sources/poky/meta-yocto \
-    \
-    ${BSPDIR}/sources/meta-openembedded/meta-oe \
-    ${BSPDIR}/sources/meta-openembedded/meta-multimedia \
-    \
-    ${BSPDIR}/sources/meta-fsl-arm \
-    ${BSPDIR}/sources/meta-fsl-arm-extra \
-    ${BSPDIR}/sources/meta-fsl-demos \
-    \
-    ${BSPDIR}/sources/meta-qt5 \
-    ${BSPDIR}/sources/meta-openembedded/meta-ruby \
-    ${BSPDIR}/sources/meta-openembedded/meta-multimedia \
-    \
-    ${BSPDIR}/sources/meta-umobo \
-  "
-
-
-II. Prepare an image
+Step-by-step guide to image baking
 =================================================
 
 This is a step-by-step guide to reproduce the same exact image prepared
 by the author (this guide only covers the preparation of the file system image,
 assuming that a kernel and the U-Boot for the U-MoBo are already in place).
 
-1) Download the REPO utils from Google
+
+1) Download the REPO utils from Google (used by fsl-community-bsp)
 
    mkdir ~/bin
 
@@ -115,7 +77,9 @@ assuming that a kernel and the U-Boot for the U-MoBo are already in place).
 
    This will create a directory named "build" under your "fsl-community-bsp"
    directory. The current directory will be automatically changed to the
-   new folder.
+   new folder (MACHINE has to be replaced with proper string if
+   you are using a Solo/DualLite i.MX6-based U-MoBo; the proposed string
+   works fine for i.MX6 Quad).
 
 
 5) Adjust your conf/bblayers.conf and conf/local.conf
@@ -150,13 +114,13 @@ assuming that a kernel and the U-Boot for the U-MoBo are already in place).
 
 6) Prepare the image
 
-   The image is prepared issuing the command:
+   The image is "baked" issuing the command:
 
    bitbake umobo-image-qt5-eglfs
 
-   Please wait... and wait again... at the end the filesystem image will
-   be ready and packaged to
-   tmp/deploy/images/imx6qsabresd/umobo-image-qt5-eglfs-imx6qsabresd
+   Please wait... and wait again... after a few hours the filesystem
+   image will be ready and packaged to
+   tmp/deploy/images/imx6qsabresd/umobo-image-qt5-eglfs-imx6qsabresd.tar.bz2
    and can be deployed to SD card the usual way.
 
 
@@ -166,9 +130,11 @@ assuming that a kernel and the U-Boot for the U-MoBo are already in place).
 
    bitbake meta-toolchain-qt5
 
-   This will produce an installer in tmp/deploy/sdk name something like
-   poky-glibc-x86_64-meta-toolchain-qt5-cortexa9hf-vfp-neon-toolchain-1.7
-   which can be used for installing the toolchain on developer machines.
+   This will produce an installer in tmp/deploy/sdk something like
+   poky-glibc-x86_64-meta-toolchain-qt5-cortexa9hf-vfp-neon-toolchain-1.7.sh
+   which can be used for installing the toolchain on developer machines. At
+   this point QtCreator has to be properly configured in order to
+   use the brand new toolchain (but this part is not covered by this guide).
 
 
 8) Enjoy! :)

@@ -29,6 +29,7 @@ l6:6:wait:/etc/init.d/rc 6
 # Normally not reached, but fallthrough in case of emergency.
 z6:6:respawn:/sbin/sulogin
 
+# Start console on serial line
 mxc3:12345:respawn:/sbin/getty 115200 ttymxc3
 
 
