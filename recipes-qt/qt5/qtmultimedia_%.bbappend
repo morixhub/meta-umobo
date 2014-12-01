@@ -14,10 +14,6 @@ sed -i 's/^\( *\)qtCompileTest(gstreamer) {/\1OE_GSTREAMER010_ENABLED:qtCompileT
 
 }
 
-SRC_URI += "\
-    file://0001-Initial-porting-effort-to-GStreamer-1.0.patch \
-    file://0002-qtmultimedia.pro-Respect-OE_GSTREAMER_ENABLED-OE_GST.patch \
-"
 
 
 
