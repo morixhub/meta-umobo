@@ -1,5 +1,5 @@
 # Customize the package config definitions
-PACKAGECONFIG[gles2] = "-opengl es2 -eglfs,,virtual/libgles2 virtual/egl"
+PACKAGECONFIG[gles2] = "-opengl es2 -eglfs -qpa eglfs,,virtual/libgles2 virtual/egl"
 
 # Customize package config content
 PACKAGECONFIG_remove = "dbus"
