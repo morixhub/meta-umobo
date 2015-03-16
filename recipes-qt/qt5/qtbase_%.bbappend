@@ -13,12 +13,15 @@ PACKAGECONFIG[sql-db2] = ","
 PACKAGECONFIG[sql-sqlite2] = ","
 PACKAGECONFIG[sql-sqlite] = ","
 
+# Add accessibility
+PACKAGECONFIG[accessibility] = "-accessibility,-accessibility"
+
 # Customize package config content
 PACKAGECONFIG_remove = "dbus"
 PACKAGECONFIG_remove = "examples"
 
 # Try to remove the following line and see if it works...
-# PACKAGECONFIG_append = "sql-sqlite"
+# PACKAGECONFIG_append = " sql-sqlite"
 
 
 

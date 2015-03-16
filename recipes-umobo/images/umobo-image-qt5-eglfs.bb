@@ -54,9 +54,12 @@ IMAGE_INSTALL_append = " gcc g++ binutils libgcc libgcc-dev libstdc++ libstdc++-
     qtconnectivity-qmlplugins \
     qtlocation-plugins \
     qtlocation-qmlplugins \
+    qtquickcontrols-qmlplugins \
+    qtserialport \
     cinematicexperience \
     cairo pango fontconfig freetype pulseaudio dbus \
     alsa-lib alsa-tools alsa-state alsa-utils-alsaconf fsl-alsa-plugins \
     i2c-tools \ 
     strace \
     "
+
