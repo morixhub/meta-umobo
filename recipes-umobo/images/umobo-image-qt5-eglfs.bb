@@ -6,6 +6,7 @@ IMAGE_INSTALL_append = " gcc g++ binutils libgcc libgcc-dev libstdc++ libstdc++-
     autoconf automake ccache chkconfig glib-networking glibmm \
     packagegroup-core-buildessential pkgconfig  \
     boost cmake zlib glib-2.0 packagegroup-fsl-tools-testapps git glive \
+    tslib-conf tslib-tests tslib-calibrate tslib \
     ruby \
     cpufrequtils \
     nano \
@@ -21,6 +22,8 @@ IMAGE_INSTALL_append = " gcc g++ binutils libgcc libgcc-dev libstdc++ libstdc++-
     gst-plugins-good-rtpmanager \
     gst-plugins-good-rtp \
     gst-plugins-good-video4linux2 \
+    gst-plugins-bad \
+    gst-plugins-ugly \
     openssh-sftp-server \
     packagegroup-fsl-gstreamer \
     packagegroup-fsl-tools-testapps \
@@ -61,5 +64,6 @@ IMAGE_INSTALL_append = " gcc g++ binutils libgcc libgcc-dev libstdc++ libstdc++-
     alsa-lib alsa-tools alsa-state alsa-utils-alsaconf fsl-alsa-plugins \
     i2c-tools \ 
     strace \
+    minicom \
     "
 
