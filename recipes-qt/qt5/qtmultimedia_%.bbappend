@@ -1,6 +1,6 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
-PACKAGECONFIG_append = "gstreamer010"
+PACKAGECONFIG_append = " gstreamer010"
 
 do_configure_prepend() {    
 
