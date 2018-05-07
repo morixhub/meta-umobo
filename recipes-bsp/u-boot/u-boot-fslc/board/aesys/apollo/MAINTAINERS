@@ -1,0 +1,7 @@
+MX6BOARDS BOARD
+M:	Morix Dev <morix.dev@gmail.com>
+S:	Maintained
+F:	board/aesys/apollo/
+F:	include/configs/aesysapollo.h
+F:	configs/apollo_defconfig
+

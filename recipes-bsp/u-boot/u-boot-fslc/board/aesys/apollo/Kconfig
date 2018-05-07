@@ -1,0 +1,12 @@
+if TARGET_AESYSAPOLLO
+
+config SYS_BOARD
+	default "apollo"
+
+config SYS_VENDOR
+	default "aesys"
+
+config SYS_CONFIG_NAME
+	default "aesysapollo"
+
+endif

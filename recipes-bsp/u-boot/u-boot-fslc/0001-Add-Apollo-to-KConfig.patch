@@ -1,0 +1,21 @@
+--- a/arch/arm/mach-imx/mx6/Kconfig	2018-05-04 16:44:05.508417916 +0200
++++ b/arch/arm/mach-imx/mx6/Kconfig	2018-05-07 09:21:12.239668398 +0200
+@@ -150,6 +150,10 @@
+ config TARGET_EMBESTMX6BOARDS
+ 	bool "embestmx6boards"
+ 	select BOARD_LATE_INIT
++	
++config TARGET_AESYSAPOLLO
++	bool "aesysapollo"
++	select BOARD_LATE_INIT
+ 
+ config TARGET_GE_B450V3
+ 	bool "General Electric B450v3"
+@@ -438,6 +442,7 @@
+ source "board/dhelectronics/dh_imx6/Kconfig"
+ source "board/el/el6x/Kconfig"
+ source "board/embest/mx6boards/Kconfig"
++source "board/aesys/apollo/Kconfig"
+ source "board/engicam/imx6q/Kconfig"
+ source "board/engicam/imx6ul/Kconfig"
+ source "board/freescale/mx6qarm2/Kconfig"
