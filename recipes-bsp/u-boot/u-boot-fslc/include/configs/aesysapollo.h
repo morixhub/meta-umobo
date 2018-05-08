@@ -33,10 +33,12 @@
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* USB Configs */
+/* //!!
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
-#define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_MXC_USB_PORTSC	(PORT_PTS_UTMI | PORT_PTS_PTW)
 #define CONFIG_MXC_USB_FLAGS	0
+*/
 
 /* MMC Configs */
 #define CONFIG_SYS_FSL_ESDHC_ADDR      0
@@ -82,8 +84,8 @@
 
 #if defined(CONFIG_ENV_IS_IN_MMC)
 #define CONFIG_FDTFILE	"imx6dl-apolloboard.dtb"
-#define CONFIG_SYS_FSL_USDHC_NUM	3
-#define CONFIG_SYS_MMC_ENV_DEV		2	/* SDHC4 */
+#define CONFIG_SYS_FSL_USDHC_NUM	2
+#define CONFIG_SYS_MMC_ENV_DEV		1	/* SDHC4 */
 #define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
 #define CONFIG_SUPPORT_EMMC_BOOT /* eMMC specific */
 #endif
@@ -118,7 +120,6 @@
 	func(MMC, mmc, 0) \
 	func(MMC, mmc, 1) \
 	func(MMC, mmc, 2) \
-	func(USB, usb, 0) \
 	func(PXE, pxe, na) \
 	func(DHCP, dhcp, na)
 

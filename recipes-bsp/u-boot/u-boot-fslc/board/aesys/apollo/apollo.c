@@ -43,7 +43,6 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
-/* //!!
 #define USDHC_PAD_CTRL (PAD_CTL_PUS_47K_UP |			\
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_80ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -52,6 +51,7 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_DSE_80ohm | PAD_CTL_SRE_FAST |			\
 	PAD_CTL_HYS)
 
+/* //!!
 #define ENET_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
 
@@ -60,14 +60,27 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define ENET_PAD_CTRL_CLK  ((PAD_CTL_PUS_100K_UP & ~PAD_CTL_PKE) | \
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
+	*/
 
 #define I2C_PAD_CTRL	(PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS |	\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
+/* //!!
 #define SPI_PAD_CTRL (PAD_CTL_HYS | PAD_CTL_SPEED_MED | \
 		      PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
 */
+
+#define WEAK_PULLUP	(PAD_CTL_PUS_100K_UP |			\
+	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS |	\
+	PAD_CTL_SRE_SLOW)
+
+#define WEAK_PULLDOWN	(PAD_CTL_PUS_100K_DOWN |		\
+	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
+	PAD_CTL_HYS | PAD_CTL_SRE_SLOW)
+
+#define OUTPUT_40OHM (PAD_CTL_SPEED_MED|PAD_CTL_DSE_40ohm)
+
 
 static int board_type = -1;
 #define BOARD_IS_MARSBOARD	0
@@ -140,6 +153,41 @@ static void setup_iomux_uart(void)
 	*/
 }
 
+
+static iomux_v3_cfg_t const otg_pads[] = {
+	MX6_PAD_ENET_RX_ER__USB_OTG_ID	| MUX_PAD_CTRL(WEAK_PULLUP),
+	MX6_PAD_EIM_D21__USB_OTG_OC	| MUX_PAD_CTRL(WEAK_PULLUP),
+	MX6_PAD_EIM_D22__GPIO3_IO22	| MUX_PAD_CTRL(OUTPUT_40OHM),
+};
+
+static iomux_v3_cfg_t const usbh_pads[] = {
+	MX6_PAD_EIM_D30__USB_H1_OC	| MUX_PAD_CTRL(WEAK_PULLUP),
+	MX6_PAD_NANDF_CS0__GPIO6_IO11	| MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+#define OTG_VBUSEN  IMX_GPIO_NR(3, 22)
+#define USBH_VBUSEN IMX_GPIO_NR(6, 11)
+
+int board_ehci_hcd_init(int port)
+{
+	if (port == 0) {
+		gpio_direction_output(OTG_VBUSEN, 0);
+	} else {
+		gpio_direction_output(USBH_VBUSEN, 0);
+		mdelay(2);
+		gpio_direction_output(USBH_VBUSEN, 1);
+	}
+	return 0;
+}
+
+int board_ehci_power(int port, int on)
+{
+	if (port == 0)
+		gpio_set_value(OTG_VBUSEN, on);
+	return 0;
+}
+
+
 //!! iomux_v3_cfg_t const enet_pads[] = {
 //!! 	MX6_PAD_ENET_MDIO__ENET_MDIO | MUX_PAD_CTRL(ENET_PAD_CTRL),
 //!! 	MX6_PAD_ENET_MDC__ENET_MDC | MUX_PAD_CTRL(ENET_PAD_CTRL),
@@ -198,140 +246,219 @@ static void setup_iomux_uart(void)
 //!! 	return 0;
 //!! }
 
-//!! iomux_v3_cfg_t const usdhc2_pads[] = {
-//!! 	MX6_PAD_SD2_CLK__SD2_CLK | MUX_PAD_CTRL(USDHC_PAD_CLK_CTRL),
-//!! 	MX6_PAD_SD2_CMD__SD2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD2_DAT0__SD2_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD2_DAT1__SD2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD2_DAT2__SD2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD2_DAT3__SD2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_GPIO_2__GPIO1_IO02 | MUX_PAD_CTRL(NO_PAD_CTRL), /* WP */
-//!! 	MX6_PAD_GPIO_4__GPIO1_IO04 | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
-//!! };
+static iomux_v3_cfg_t const usdhc1_pads[] = {
+	MX6_PAD_SD1_CLK__SD1_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD1_CMD__SD1_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD1_DAT0__SD1_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD1_DAT1__SD1_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD1_DAT2__SD1_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD1_DAT3__SD1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_NANDF_CS1__GPIO6_IO14 | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
+	MX6_PAD_NANDF_CS2__GPIO6_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL), /* WP */
+};
 
-//!! iomux_v3_cfg_t const usdhc3_pads[] = {
-//!! 	MX6_PAD_SD3_CLK__SD3_CLK | MUX_PAD_CTRL(USDHC_PAD_CLK_CTRL),
-//!! 	MX6_PAD_SD3_CMD__SD3_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD3_DAT0__SD3_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD3_DAT1__SD3_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD3_DAT2__SD3_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD3_DAT3__SD3_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! };
+static iomux_v3_cfg_t const usdhc4_pads[] = {
+	MX6_PAD_SD4_CLK__SD4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_CMD__SD4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT0__SD4_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT1__SD4_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT2__SD4_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT3__SD4_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT4__SD4_DATA4 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT5__SD4_DATA5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT6__SD4_DATA6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT7__SD4_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_NANDF_ALE__SD4_RESET | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+};
 
-//!! iomux_v3_cfg_t const riotboard_usdhc3_pads[] = {
-//!! 	MX6_PAD_SD3_DAT4__GPIO7_IO01 | MUX_PAD_CTRL(NO_PAD_CTRL), /* WP */
-//!! 	MX6_PAD_SD3_DAT5__GPIO7_IO00 | MUX_PAD_CTRL(NO_PAD_CTRL), /* CD */
-//!! };
+/* //!!
+iomux_v3_cfg_t const usdhc2_pads[] = {
+	MX6_PAD_SD2_CLK__SD2_CLK | MUX_PAD_CTRL(USDHC_PAD_CLK_CTRL),
+	MX6_PAD_SD2_CMD__SD2_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_DAT0__SD2_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_DAT1__SD2_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_DAT2__SD2_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD2_DAT3__SD2_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_GPIO_2__GPIO1_IO02 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_GPIO_4__GPIO1_IO04 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
 
-//!! iomux_v3_cfg_t const usdhc4_pads[] = {
-//!! 	MX6_PAD_SD4_CLK__SD4_CLK | MUX_PAD_CTRL(USDHC_PAD_CLK_CTRL),
-//!! 	MX6_PAD_SD4_CMD__SD4_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD4_DAT0__SD4_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD4_DAT1__SD4_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD4_DAT2__SD4_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	MX6_PAD_SD4_DAT3__SD4_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-//!! 	/* eMMC RST */
-//!! 	MX6_PAD_NANDF_ALE__GPIO6_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),
-//!! };
+iomux_v3_cfg_t const usdhc3_pads[] = {
+	MX6_PAD_SD3_CLK__SD3_CLK | MUX_PAD_CTRL(USDHC_PAD_CLK_CTRL),
+	MX6_PAD_SD3_CMD__SD3_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT0__SD3_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT1__SD3_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT2__SD3_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD3_DAT3__SD3_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+};
 
-//!! #ifdef CONFIG_FSL_ESDHC
-//!! struct fsl_esdhc_cfg usdhc_cfg[3] = {
-//!! 	{USDHC2_BASE_ADDR},
-//!! 	{USDHC3_BASE_ADDR},
-//!! 	{USDHC4_BASE_ADDR},
-//!! };
+iomux_v3_cfg_t const riotboard_usdhc3_pads[] = {
+	MX6_PAD_SD3_DAT4__GPIO7_IO01 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_SD3_DAT5__GPIO7_IO00 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
 
-//!! #define USDHC2_CD_GPIO	IMX_GPIO_NR(1, 4)
-//!! #define USDHC3_CD_GPIO	IMX_GPIO_NR(7, 0)
+iomux_v3_cfg_t const usdhc4_pads[] = {
+	MX6_PAD_SD4_CLK__SD4_CLK | MUX_PAD_CTRL(USDHC_PAD_CLK_CTRL),
+	MX6_PAD_SD4_CMD__SD4_CMD | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT0__SD4_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT1__SD4_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT2__SD4_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT3__SD4_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_NANDF_ALE__GPIO6_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL),
+}; */
 
-//!! int board_mmc_getcd(struct mmc *mmc)
-//!! {
-//!! 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
-//!! 	int ret = 0;
-//!! 
-//!! 	switch (cfg->esdhc_base) {
-//!! 	case USDHC2_BASE_ADDR:
-//!! 		ret = !gpio_get_value(USDHC2_CD_GPIO);
-//!! 		break;
-//!! 	case USDHC3_BASE_ADDR:
-//!! 		if (board_type == BOARD_IS_RIOTBOARD)
-//!! 			ret = !gpio_get_value(USDHC3_CD_GPIO);
-//!! 		else if (board_type == BOARD_IS_MARSBOARD)
-//!! 			ret = 1; /* eMMC/uSDHC3 is always present */
-//!! 		break;
-//!! 	case USDHC4_BASE_ADDR:
-//!! 		ret = 1; /* eMMC/uSDHC4 is always present */
-//!! 		break;
-//!! 	}
-//!! 
-//!! 	return ret;
-//!! }
+#ifdef CONFIG_FSL_ESDHC
+/* //!!
+struct fsl_esdhc_cfg usdhc_cfg[3] = {
+	{USDHC2_BASE_ADDR},
+	{USDHC3_BASE_ADDR},
+	{USDHC4_BASE_ADDR},
+};
 
-//!! int board_mmc_init(bd_t *bis)
-//!! {
-//!! 	int ret;
-//!! 	int i;
+#define USDHC2_CD_GPIO	IMX_GPIO_NR(1, 4)
+#define USDHC3_CD_GPIO	IMX_GPIO_NR(7, 0)
+*/
 
-//!! 	/*
-//!! 	 * According to the board_mmc_init() the following map is done:
-//!! 	 * (U-Boot device node)    (Physical Port)
-//!! 	 * ** RiOTboard :
-//!! 	 * mmc0                    SDCard slot (bottom)
-//!! 	 * mmc1                    uSDCard slot (top)
-//!! 	 * mmc2                    eMMC
-//!! 	 * ** MarSBoard :
-//!! 	 * mmc0                    uSDCard slot (bottom)
-//!! 	 * mmc1                    eMMC
-//!! 	 */
-//!! 	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
-//!! 		switch (i) {
-//!! 		case 0:
-//!! 			imx_iomux_v3_setup_multiple_pads(
-//!! 				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
-//!! 			gpio_direction_input(USDHC2_CD_GPIO);
-//!! 			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
-//!! 			usdhc_cfg[0].max_bus_width = 4;
-//!! 			break;
-//!! 		case 1:
-//!! 			imx_iomux_v3_setup_multiple_pads(
-//!! 				usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
-//!! 			if (board_type == BOARD_IS_RIOTBOARD) {
-//!! 				imx_iomux_v3_setup_multiple_pads(
-//!! 					riotboard_usdhc3_pads,
-//!! 					ARRAY_SIZE(riotboard_usdhc3_pads));
-//!! 				gpio_direction_input(USDHC3_CD_GPIO);
-//!! 			} else {
-//!! 				gpio_direction_output(IMX_GPIO_NR(7, 8) , 0);
-//!! 				udelay(250);
-//!! 				gpio_set_value(IMX_GPIO_NR(7, 8), 1);
-//!! 			}
-//!! 			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-//!! 			usdhc_cfg[1].max_bus_width = 4;
-//!! 			break;
-//!! 		case 2:
-//!! 			imx_iomux_v3_setup_multiple_pads(
-//!! 				usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
-//!! 			usdhc_cfg[2].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
-//!! 			usdhc_cfg[2].max_bus_width = 4;
-//!! 			gpio_direction_output(IMX_GPIO_NR(6, 8) , 0);
-//!! 			udelay(250);
-//!! 			gpio_set_value(IMX_GPIO_NR(6, 8), 1);
-//!! 			break;
-//!! 		default:
-//!! 			printf("Warning: you configured more USDHC controllers"
-//!! 			       "(%d) then supported by the board (%d)\n",
-//!! 			       i + 1, CONFIG_SYS_FSL_USDHC_NUM);
-//!! 			return -EINVAL;
-//!! 		}
-//!! 
-//!! 		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
-//!! 		if (ret)
-//!! 			return ret;
-//!! 	}
-//!! 
-//!! 	return 0;
-//!! }
-//!! #endif
+struct fsl_esdhc_cfg usdhc_cfg[2] = {
+	{USDHC4_BASE_ADDR},
+	{USDHC1_BASE_ADDR},
+};
+
+#define USDHC1_CD_GPIO	IMX_GPIO_NR(6, 14)
+
+int board_mmc_getcd(struct mmc *mmc)
+{
+	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
+	int ret = 0;
+ 
+        if (cfg->esdhc_base == USDHC4_BASE_ADDR) {
+		ret = 1;
+	} else if (cfg->esdhc_base == USDHC1_BASE_ADDR) {
+		gpio_direction_input(USDHC1_CD_GPIO);
+		ret = !gpio_get_value(USDHC1_CD_GPIO);
+	} else {
+		return 0;
+	}
+	
+        /* //!!
+	switch (cfg->esdhc_base) {
+	case USDHC2_BASE_ADDR:
+		ret = !gpio_get_value(USDHC2_CD_GPIO);
+		break;
+	case USDHC3_BASE_ADDR:
+		if (board_type == BOARD_IS_RIOTBOARD)
+			ret = !gpio_get_value(USDHC3_CD_GPIO);
+		else if (board_type == BOARD_IS_MARSBOARD)
+			ret = 1;
+		break;
+	case USDHC4_BASE_ADDR:
+		ret = 1;
+		break;
+	}
+	*/
+ 
+	return ret;
+}
+
+int board_mmc_init(bd_t *bis)
+{
+        s32 status = 0;
+	u32 index = 0;
+
+	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
+		switch (index) {
+		case 0:
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
+			usdhc_cfg[0].max_bus_width = 4;
+			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
+			break;
+		case 1:
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
+			usdhc_cfg[1].max_bus_width = 4;
+			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
+			gpio_direction_input(USDHC1_CD_GPIO);
+			break;
+		default:
+			printf("Warning: you configured more USDHC controllers"
+				"(%d) then supported by the board (%d)\n",
+				index + 1, CONFIG_SYS_FSL_USDHC_NUM);
+			return status;
+		}
+
+		status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
+	}
+
+	return status;
+        
+        /* //!!
+	int ret;
+	int i;
+        */
+
+	/*
+	 * According to the board_mmc_init() the following map is done:
+	 * (U-Boot device node)    (Physical Port)
+	 * ** RiOTboard :
+	 * mmc0                    SDCard slot (bottom)
+	 * mmc1                    uSDCard slot (top)
+	 * mmc2                    eMMC
+	 * ** MarSBoard :
+	 * mmc0                    uSDCard slot (bottom)
+	 * mmc1                    eMMC
+	 */
+        /* //!!
+	for (i = 0; i < CONFIG_SYS_FSL_USDHC_NUM; i++) {
+		switch (i) {
+		case 0:
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc2_pads, ARRAY_SIZE(usdhc2_pads));
+			gpio_direction_input(USDHC2_CD_GPIO);
+			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+			usdhc_cfg[0].max_bus_width = 4;
+			break;
+		case 1:
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
+			if (board_type == BOARD_IS_RIOTBOARD) {
+				imx_iomux_v3_setup_multiple_pads(
+					riotboard_usdhc3_pads,
+					ARRAY_SIZE(riotboard_usdhc3_pads));
+				gpio_direction_input(USDHC3_CD_GPIO);
+			} else {
+				gpio_direction_output(IMX_GPIO_NR(7, 8) , 0);
+				udelay(250);
+				gpio_set_value(IMX_GPIO_NR(7, 8), 1);
+			}
+			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+			usdhc_cfg[1].max_bus_width = 4;
+			break;
+		case 2:
+			imx_iomux_v3_setup_multiple_pads(
+				usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
+			usdhc_cfg[2].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
+			usdhc_cfg[2].max_bus_width = 4;
+			gpio_direction_output(IMX_GPIO_NR(6, 8) , 0);
+			udelay(250);
+			gpio_set_value(IMX_GPIO_NR(6, 8), 1);
+			break;
+		default:
+			printf("Warning: you configured more USDHC controllers"
+			       "(%d) then supported by the board (%d)\n",
+			       i + 1, CONFIG_SYS_FSL_USDHC_NUM);
+			return -EINVAL;
+		}
+ 
+		ret = fsl_esdhc_initialize(bis, &usdhc_cfg[i]);
+		if (ret)
+			return ret;
+	}
+	*/
+
+	//!! return 0;
+}
+#endif
 
 /* //!!
 #ifdef CONFIG_MXC_SPI
@@ -354,7 +481,6 @@ static void setup_spi(void)
 #endif
 */
 
-/* //!!
 struct i2c_pads_info i2c_pad_info1 = {
 	.scl = {
 		.i2c_mode = MX6_PAD_CSI0_DAT9__I2C1_SCL
@@ -404,7 +530,7 @@ struct i2c_pads_info i2c_pad_info3 = {
 				| MUX_PAD_CTRL(I2C_PAD_CTRL),
 		.gp = IMX_GPIO_NR(1, 6)
 	}
-}; */
+};
 
 //!! iomux_v3_cfg_t const tft_pads_riot[] = {
 //!! 	/* LCD_PWR_EN */
@@ -613,17 +739,21 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
+	imx_iomux_v3_setup_multiple_pads(otg_pads, ARRAY_SIZE(otg_pads));
+	imx_iomux_v3_setup_multiple_pads(usbh_pads, ARRAY_SIZE(usbh_pads));
+        
+        
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
         
-        /* //!!
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info3);
+        
+        /* //!!
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
-#endif
-        */
+#endif */
         
 	return 0;
 }
