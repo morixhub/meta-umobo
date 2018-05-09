@@ -1,0 +1,7 @@
+&lcd0 {
+	disp_id = <1>;
+};
+
+&hdmi_core {
+	disp_id = <0>;
+};
