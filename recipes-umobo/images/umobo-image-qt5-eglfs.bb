@@ -17,10 +17,19 @@ IMAGE_INSTALL_append = " \
     alsa-plugins \
     imx-alsa-plugins \
     i2c-tools \ 
+    nss \
     strace \
     minicom \
     imx-vpu \
-    imx-test \    	
+    imx-test \
+    wget \
+    curl \
+    cairo \
+    pango \
+    fontconfig \
+    freetype \
+    liberation-fonts \
+    ca-certificates \
     qtbase \
     qtdeclarative \
     qtquick1 \

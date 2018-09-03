@@ -1,0 +1,31 @@
+--- a/src/core/config/linux.pri
++++ b/src/core/config/linux.pri
+@@ -10,15 +10,19 @@ gn_args += \
+     use_kerberos=false \
+     linux_use_bundled_binutils=false
+ 
+-use?(nss) {
+-    gn_args += \
+-        use_nss_certs=true \
+-        use_openssl_certs=false
+-} else {
+-    gn_args += \
+-        use_nss_certs=false \
+-        use_openssl_certs=true
+-}
++#use?(nss) {
++#    gn_args += \
++#        use_nss_certs=true \
++#        use_openssl_certs=false
++#} else {
++#    gn_args += \
++#        use_nss_certs=false \
++#        use_openssl_certs=true
++#}
++
++gn_args += use_nss_certs=false \
++            use_openssl_certs=true
++
+ gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): gn_args += no_delete_null_pointer_checks=true
+ 
+ clang {
