@@ -312,6 +312,8 @@ int board_mmc_init(bd_t *bis)
         s32 status = 0;
 	u32 index = 0;
 
+	printf("Initializing MMC...\n");
+
 	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
 		switch (index) {
 		case 0:
@@ -633,4 +635,14 @@ int checkboard(void)
     puts("Board: Apollo\n");
 
     return 0;
+}
+
+void spi_flash_free(struct spi_flash *flash)
+{
+}
+
+struct spi_flash *spi_flash_probe(unsigned int busnum, unsigned int cs,
+				  unsigned int max_hz, unsigned int spi_mode)
+{
+	return NULL;
 }

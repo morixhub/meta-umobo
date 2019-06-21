@@ -9,8 +9,8 @@
 +	bool "aesysapollo"
 +	select BOARD_LATE_INIT
  
- config TARGET_GE_B450V3
- 	bool "General Electric B450v3"
+ config TARGET_GE_BX50V3
+ 	bool "General Electric Bx50v3"
 @@ -438,6 +442,7 @@
  source "board/dhelectronics/dh_imx6/Kconfig"
  source "board/el/el6x/Kconfig"

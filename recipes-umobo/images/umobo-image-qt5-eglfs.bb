@@ -32,7 +32,6 @@ IMAGE_INSTALL_append = " \
     ca-certificates \
     qtbase \
     qtdeclarative \
-    qtquick1 \
     qtquickcontrols \
     qtquickcontrols2 \
     qtmultimedia \
@@ -46,4 +45,6 @@ IMAGE_INSTALL_append = " \
     qtvirtualkeyboard \
     cinematicexperience \
     "
+
+inherit populate_sdk_qt5
 

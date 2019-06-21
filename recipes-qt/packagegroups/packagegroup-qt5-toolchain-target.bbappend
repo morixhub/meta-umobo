@@ -3,6 +3,11 @@ RDEPENDS_${PN} += " \
     qtwebengine \
 "
 
+RDEPENDS_${PN}_remove = "qtwebkit"
+RDEPENDS_${PN}_remove = "qtwebkit-dev"
+
+
+
 
 
 
